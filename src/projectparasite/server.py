@@ -3,6 +3,10 @@ import asyncio
 from fastapi import FastAPI, WebSocket, WebSocketDisconnect
 from . import protocol 
 
+import os, secrets
+
+TOKEN = os.environ["PARASITE_TOKEN"]  # must be set in the environment
+
 app = FastAPI()
 
 @app.websocket("/ws")
@@ -18,7 +22,7 @@ async def ws_endpoint(websocket : WebSocket):
             await websocket.close()
             return
         
-        if msg.token != protocol.TOKEN:
+        if not secrets.compare_digest(msg.token.encode(), TOKEN.encode()):
             await websocket.send_text(protocol.encode(protocol.Rejected(reason="bad token")))
             await websocket.close()
             return

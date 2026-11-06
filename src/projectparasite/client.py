@@ -3,9 +3,13 @@ import websockets
 
 from projectparasite import protocol
 
+import os
+
+TOKEN = os.environ["PARASITE_TOKEN"]  # must be set in the environment
+
 async def init(ip):
     async with websockets.connect(f"ws://{ip}:8000/ws") as ws:
-        await ws.send(protocol.encode(protocol.Hello(name="popos", token=protocol.TOKEN)))
+        await ws.send(protocol.encode(protocol.Hello(name="popos", token=TOKEN)))
         reply = protocol.decode(await ws.recv())
         if isinstance(reply, protocol.Accepted):
             print("Connection accepted by server.")
