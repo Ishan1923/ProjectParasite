@@ -12,12 +12,19 @@ async def init(ip):
         await ws.send(protocol.encode(protocol.Hello(name="popos", token=TOKEN)))
         reply = protocol.decode(await ws.recv())
         if isinstance(reply, protocol.Accepted):
-            print("Connection accepted by server.")
             async for raw in ws:
-                msg = protocol.decode(raw)
-                print("Received message from server:", msg)
+                try:
+                    msg = protocol.decode(raw)
+                except protocol.ProtocolError as e:
+                    print(f"Protocol error: {e}", file = sys.stderr)
+                    continue
+                await pass_msg(msg)
+                
         else:
-            print(f"Connection rejected by server: {reply.reason}")
+            print(f"Connection rejected by server: {reply.reason}", file = sys.stderr)
+
+async def pass_msg(msg):
+    print(protocol.encode(msg), flush=True)
 
 def main():
     asyncio.run(init(sys.argv[1]))
